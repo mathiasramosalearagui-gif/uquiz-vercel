@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UQuiz - UX Quiz Master</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div class="mobile-container">
+
+    <!-- TELA 1: MENU INICIAL -->
+    <section id="home-screen" class="screen active">
+      <div class="logo-box">
+        <div class="logo-icon">UQ</div>
+        <h1 class="logo-title">UQuiz<span>?</span></h1>
+        <p class="logo-tagline">Experiência do Usuário & UX Design</p>
+      </div>
+
+      <div class="player-input-card">
+        <label for="player-nickname">Seu Nickname:</label>
+        <input type="text" id="player-nickname" placeholder="Ex: UX_Master" maxlength="15" autocomplete="off">
+      </div>
+
+      <div class="info-card">
+        <h3>Aulas 70 & 71</h3>
+        <p>Teste seus conhecimentos em UI vs UX, Don Norman, Subáreas e Análise do Usuário!</p>
+      </div>
+
+      <div class="level-select">
+        <h2>Escolha a Dificuldade:</h2>
+        <button class="btn-level easy" onclick="initGame('facil')">
+          <span class="level-title">🌱 Fácil</span>
+          <span class="level-desc">10 Questões • Conceitos Básicos</span>
+        </button>
+        <button class="btn-level medium" onclick="initGame('medio')">
+          <span class="level-title">⚡ Médio</span>
+          <span class="level-desc">10 Questões • Aplicação & Métodos</span>
+        </button>
+        <button class="btn-level hard" onclick="initGame('dificil')">
+          <span class="level-title">🔥 Difícil</span>
+          <span class="level-desc">10 Questões • Teoria Avançada</span>
+        </button>
+      </div>
+
+      <button class="btn-ranking-link" onclick="showLeaderboardScreen()">🏆 Ver Ranking Global</button>
+    </section>
+
+    <!-- TELA 2: QUIZ -->
+    <section id="quiz-screen" class="screen">
+      <header class="quiz-header">
+        <button class="btn-back" onclick="goToHome()">✕</button>
+        <div class="level-badge" id="current-level-badge">Fácil</div>
+        <div class="score-pill">Pontos: <span id="current-score">0</span></div>
+      </header>
+
+      <div class="progress-container">
+        <div class="progress-labels">
+          <span id="question-number-text">Questão 1 de 10</span>
+          <span id="progress-percent">10%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+      </div>
+
+      <main class="question-card">
+        <h2 id="question-text">Pergunta aqui...</h2>
+        <div class="options-container" id="options-container">
+          <!-- Botões gerados via JS -->
+        </div>
+        <div id="feedback-message" class="feedback-box hidden"></div>
+      </main>
+
+      <footer class="quiz-footer">
+        <button id="btn-next" class="btn-action hidden" onclick="nextQuestion()">Próxima Questão ➔</button>
+      </footer>
+    </section>
+
+    <!-- TELA 3: RESULTADO FINAL -->
+    <section id="result-screen" class="screen">
+      <div class="result-card">
+        <div class="result-badge-icon" id="result-icon">🏆</div>
+        <h2 id="result-title">Mandou Muito!</h2>
+        <p id="result-subtitle">Jogador: <strong id="result-player-name">--</strong></p>
+
+        <div class="score-circle">
+          <span id="final-score-number">0</span>
+          <small>/ 10 acertos</small>
+        </div>
+
+        <p class="performance-msg" id="performance-msg">Desempenho excelente!</p>
+
+        <div class="stats-grid">
+          <div class="stat-box">
+            <span class="stat-value" id="stat-accuracy">0%</span>
+            <span class="stat-label">Precisão</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-value" id="stat-level">Fácil</span>
+            <span class="stat-label">Nível</span>
+          </div>
+        </div>
+
+        <div class="actions-stack">
+          <button class="btn-action" onclick="showLeaderboardScreen()">Ver Ranking Global 🏆</button>
+          <button class="btn-action btn-secondary" onclick="goToHome()">Jogar Novamente 🔄</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TELA 4: RANKING GLOBAL -->
+    <section id="ranking-screen" class="screen">
+      <header class="quiz-header">
+        <button class="btn-back" onclick="goToHome()">✕</button>
+        <h2 class="ranking-header-title">🏆 Top Ranking</h2>
+        <div style="width: 34px;"></div>
+      </header>
+
+      <div class="ranking-container">
+        <div class="ranking-list" id="ranking-list">
+          <p class="loading-txt">Carregando dados do MongoDB...</p>
+        </div>
+      </div>
+
+      <button class="btn-action btn-restart" onclick="goToHome()">Voltar ao Menu 🏠</button>
+    </section>
+
+  </div>
+
+  <!-- BIBLIOTECA DE CONFETES -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script src="script.js"></script>
+</body>
+
+</html>

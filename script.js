@@ -1,7 +1,7 @@
 // CONFIGURAÇÃO DA API BACKEND
 // Local: use 'http://127.0.0.1:3000/api/ranking'
 // Produção (Render): mude para 'https://seu-app.onrender.com/api/ranking'
-const API_URL = "https://uquiz-back.onrender.com";
+const API_URL = 'http://127.0.0.1:3000/api/ranking';
 
 // BANCO DE DADOS DE QUESTÕES - AULAS 70 E 71 (UX DESIGN)
 const quizDatabase = {
@@ -337,6 +337,20 @@ const questionNumberText = document.getElementById('question-number-text');
 const progressPercent = document.getElementById('progress-percent');
 const progressFill = document.getElementById('progress-fill');
 
+// FUNÇÃO DE CONEXÃO COM TENTATIVAS AUTOMÁTICAS (RETRIES)
+async function fetchWithRetry(url, options = {}, retries = 3, delay = 1500) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await fetch(url, options);
+      if (response.ok) return response;
+    } catch (err) {
+      if (i === retries - 1) throw err;
+    }
+    await new Promise(resolve => setTimeout(resolve, delay));
+  }
+  throw new Error("Não foi possível conectar ao servidor após várias tentativas.");
+}
+
 // INICIA O JOGO VALIDANDO O NICKNAME
 function initGame(level) {
   const nameValue = nicknameInput.value.trim();
@@ -432,11 +446,11 @@ function nextQuestion() {
 // INTEGRAÇÃO COM O BACKEND (EXPRESS + MONGOOSE)
 // ----------------------------------------------------
 
-// POST: Envia a pontuação para o MongoDB
+// POST: Envia a pontuação para o MongoDB com retries
 async function saveScoreToBackend(name, finalScore, level) {
   try {
     const levelNames = { facil: 'Fácil', medio: 'Médio', dificil: 'Difícil' };
-    const response = await fetch(API_URL, {
+    const response = await fetchWithRetry(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -444,7 +458,7 @@ async function saveScoreToBackend(name, finalScore, level) {
         score: finalScore,
         level: levelNames[level] || level
       })
-    });
+    }, 3, 1500);
 
     const data = await response.json();
     console.log('Resposta do Servidor:', data);
@@ -489,7 +503,6 @@ function showResults() {
     perfMsg.textContent = 'Revise os tópicos das Aulas 70 e 71 e tente novamente!';
   }
 
-  // Efeito visual de confetes se a pontuação for alta (>= 8)
   if (score >= 8 && typeof confetti === 'function') {
     confetti({
       particleCount: 120,
@@ -498,11 +511,10 @@ function showResults() {
     });
   }
 
-  // Envia os dados para a API do backend
   saveScoreToBackend(playerName, score, currentLevel);
 }
 
-// GET: BUSCA RANKING COM MEDALHAS (#1 🥇, #2 🥈, #3 🥉)
+// GET: BUSCA RANKING COM RETRIES E RECONEXÃO FÁCIL
 async function showLeaderboardScreen() {
   homeScreen.classList.remove('active');
   resultScreen.classList.remove('active');
@@ -510,14 +522,10 @@ async function showLeaderboardScreen() {
   rankingScreen.classList.add('active');
 
   const rankingList = document.getElementById('ranking-list');
-  rankingList.innerHTML = '<p class="loading-txt">Carregando dados do MongoDB...</p>';
+  rankingList.innerHTML = '<p class="loading-txt">⏳ Conectando ao banco de dados... (aguarde)</p>';
 
   try {
-    const response = await fetch(API_URL);
-    if (!response.ok) {
-      throw new Error(`HTTP Error Status: ${response.status}`);
-    }
-
+    const response = await fetchWithRetry(API_URL, {}, 3, 2000);
     const players = await response.json();
     rankingList.innerHTML = '';
     let pos = 1;
@@ -528,7 +536,6 @@ async function showLeaderboardScreen() {
     }
 
     players.forEach(data => {
-      // Define medalha para o Top 3
       let posDisplay = `#${pos}`;
       if (pos === 1) posDisplay = '🥇';
       else if (pos === 2) posDisplay = '🥈';
@@ -546,7 +553,12 @@ async function showLeaderboardScreen() {
     });
   } catch (error) {
     console.error('Erro ao buscar ranking:', error);
-    rankingList.innerHTML = '<p class="loading-txt">Erro ao conectar com o servidor.</p>';
+    rankingList.innerHTML = `
+      <div style="text-align: center; padding: 12px 0;">
+        <p class="loading-txt" style="margin-bottom: 12px;">O servidor demorou a responder.</p>
+        <button class="btn-action btn-secondary" onclick="showLeaderboardScreen()" style="padding: 8px 16px; font-size: 12px;">🔄 Tentar Novamente</button>
+      </div>
+    `;
   }
 }
 

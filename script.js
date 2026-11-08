@@ -1,7 +1,7 @@
 // CONFIGURAÇÃO DA API BACKEND
 // Local: use 'http://127.0.0.1:3000/api/ranking'
 // Produção (Render): mude para 'https://seu-app.onrender.com/api/ranking'
-const API_URL = "https://uquiz-back.onrender.com/"
+const API_URL = "https://uquiz-back.onrender.com/api/ranking"
 
 // BANCO DE DADOS DE QUESTÕES - AULAS 70 E 71 (UX DESIGN)
 const quizDatabase = {
